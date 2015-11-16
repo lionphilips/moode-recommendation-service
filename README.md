@@ -7,4 +7,5 @@ Composto por 3 módulos:
 - Módulo Web Service - é responsável pela análise e recomendação de conteúdo para alunos atráves de email e notificação no App Mobile
 
 Como funciona?
+
 O Serviço analisa as notas obtidas pelos alunos em seus respectivos cursos e, caso o aluno tenha nota inferior a 7 (ou 70%) será realizada uma recomendação de conteúdos da Web baseado no assunto da avaliação. Esse conteúdo serão enviados via email.
