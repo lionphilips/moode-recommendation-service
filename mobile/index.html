@@ -1,0 +1,266 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>U-AVA Aluno</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <!-- FontAwesome - http://fortawesome.github.io/Font-Awesome/ -->
+        <link rel="stylesheet" href="css/font-awesome.min.css" />
+        <!-- jQueryMobileCSS - original without styling -->
+        <link rel="stylesheet" href="css/jquerymobile.css" />
+        <!-- nativeDroid core CSS -->
+        <link rel="stylesheet" href="css/jquerymobile.nativedroid.css" />
+        <!-- nativeDroid: Light/Dark -->
+        <link rel="stylesheet" href="css/jquerymobile.nativedroid.dark.css" id='jQMnDTheme' />
+        <!-- nativeDroid: Color Schemes -->
+        <link rel="stylesheet" href="css/jquerymobile.nativedroid.color.green.css" id='jQMnDColor' />
+        <!-- jQuery / jQueryMobile Scripts -->
+        <script src="js/jquery-1.9.1.min.js"></script>
+        <script src="js/jquery.mobile-1.3.1.min.js"></script>
+    </head>
+    <body> 
+        <div id="login" data-role="page" data-theme='b'>
+            <div data-role="header" data-position="fixed" data-tap-toggle="false" data-theme='b'>
+                <h1>U-AVA Aluno</h1>
+            </div>
+            <div data-role="content">   
+                <form name="form" id="form">
+                    <ul data-role="listview" data-inset="true">
+                        <li data-role="fieldcontain">
+                            <input type="text" name="inputEmail" id="inputEmail" value="" data-clear-btn="true" placeholder="Email">
+                        </li>
+                        <li data-role="fieldcontain">
+                            <input type="password" name="inputPassword" id="inputPassword" value="" data-clear-btn="true" placeholder="Senha">
+                        </li>
+                        <li>
+                            <fieldset class="ui-grid-a">
+                                <div class="ui-block-a" onclick="$.mobile.changePage( '#cadastro', { transition: 'slide' })"><button type="button" data-theme="b">Cadastro</button></div>
+                                <div class="ui-block-b"><button id="btn-submit" type="button" data-theme="b">Entrar</button></div>
+                            </fieldset>
+                        </li>
+                    </ul>
+                </form>
+                <div id="div-alert" class="message warning" style="display: none;"><i class="icon-warning-sign"></i><p>Preencha corretamente os dados</p></div>
+                <div id="div-error" class="message error" style="display: none;"><i class="icon-exclamation-sign"></i><p>Dados incorretos. Tente novamente!</p></div>
+            </div>
+        </div>
+        <div id="home" data-role="page" data-theme="b">
+            <div data-role="header" data-theme="b">
+                <h1>U-AVA Aluno</h1>
+                <a onclick="logout()" data-icon="delete" class="ui-btn-right">Sair</a>
+            </div>
+            <div data-role="content">
+
+                <div id="div_notifications" data-role="collapsible-set" data-theme="b" data-content-theme="b">
+                    
+                </div>
+
+            </div>
+        </div>
+        <div id="cadastro" data-role="page" data-theme='b'>
+            <div data-role="header" data-position="fixed" data-tap-toggle="false" data-theme='b'>
+                <h1>U-AVA Aluno</h1>
+            </div>
+            <div data-role="content">
+                <form name="form2" id="form2">
+                    <h2 style="text-align: center">Cadastro</h2>
+                    <ul data-role="listview" data-inset="true">
+                        <li data-role="fieldcontain">
+                            <input type="text" name="inputNome" id="inputNome" value="" data-clear-btn="true" placeholder="Nome">
+                        </li>
+                        <li data-role="fieldcontain">
+                            <input type="text" name="inputEmail2" id="inputEmail2" value="" data-clear-btn="true" placeholder="Email">
+                        </li>
+                        <li data-role="fieldcontain">
+                            <input type="password" name="inputPassword2" id="inputPassword2" value="" data-clear-btn="true" placeholder="Senha">
+                        </li>
+                        <li data-role="fieldcontain">
+                            <input type="password" name="inputPassword3" id="inputPassword3" value="" data-clear-btn="true" placeholder="Confirmação de Senha">
+                        </li>
+                        <li>
+                            <fieldset class="ui-grid-a">
+                                <div class="ui-block-a" onclick="$.mobile.changePage( '#login', { transition: 'slideup' })"><button type="button" data-theme="b">Voltar</button></div>
+                                <div class="ui-block-b"><button id="btn-submit2" type="button" data-theme="b">Cadastrar</button></div>
+                            </fieldset>
+                        </li>
+                    </ul>
+                </form>
+                <div id="div-alert2" class="message warning" style="display: none;"><i class="icon-warning-sign"></i><p>Preencha corretamente os dados</p></div>
+                <div id="div-error2" class="message error" style="display: none;"><i class="icon-exclamation-sign"></i><p id="p_error"></p></div>
+                <div id="div-success" class="message success" style="display: none;"></div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        
+        $(document).ready(function(){
+            
+            //login automatico
+            if(localStorage.getItem('id') != null)
+            {
+                loading("Carregando", "");
+                recebe_notificacoes(localStorage.getItem('id'));
+            }
+            
+        });
+        
+        $("#btn-submit").click(function () {
+            var inputEmail = $("#inputEmail").val().trim();
+            var inputPassword = $("#inputPassword").val().trim();
+
+            if (validateEmail(inputEmail) && inputPassword.length >= 5)
+            {
+                $("#div-alert, #div-error").hide();
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        loading("Logando...", "");
+                    },
+                    url: "http://lionphilips.tk/CI/index.php/mobile/auth",
+                    data: {email: inputEmail, senha: inputPassword},
+                    success: function (data) {
+                        $.mobile.loading('hide');
+                        if (data != "false")
+                        {
+                            var user_data = jQuery.parseJSON(data);
+
+                            localStorage.setItem('id', user_data.id);
+                            localStorage.setItem('nome', user_data.nome);
+                            localStorage.setItem('email', user_data.email);
+                            localStorage.setItem('auth', true);
+                            localStorage.setItem('uava_email', inputEmail);
+                            
+                            recebe_notificacoes(user_data.id);
+                        }
+                        else
+                        {
+                            $("#div-error").show().fadeOut(5000);
+                        }
+
+                    }
+                });
+            }
+            else
+            {
+                $("#div-alert").show().fadeOut(5000);
+            }
+        });
+        
+        $("#btn-submit2").click(function () {
+            var inputNome = $("#inputNome").val().trim();
+            var inputEmail2 = $("#inputEmail2").val().trim();
+            var inputPassword2 = $("#inputPassword2").val().trim();
+            var inputPassword3 = $("#inputPassword3").val().trim();
+
+            if (inputNome.length > 0 && validateEmail(inputEmail2) && inputPassword2.length > 0 && inputPassword2 == inputPassword3)
+            {
+                $("#div-alert2, #div-error2").hide();
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        loading("Salvando informações", "");
+                    },
+                    url: "http://lionphilips.tk/CI/index.php/mobile/cadastro",
+                    data: {nome: inputNome, email: inputEmail2, senha: inputPassword2, senha2: inputPassword3},
+                    success: function (data) {
+                        $.mobile.loading('hide');
+                        if (data == "true")
+                        {
+                            $("#div-success").html("<h4>Usuário cadastrado!</h4> Acesso sua conta de email para validação.").show();
+                            
+                            setTimeout(function(){ location.hash = "login"; }, 3000);
+                        }
+                        else if (data == "false")
+                        {
+                            $("#p_error").html("Ocorreu um erro ao salvar os dados");
+                            $("#div-error2").show().fadeOut(5000);
+                        }
+                        else
+                        {
+                            $("#p_error").html(data);
+                            $("#div-error2").show().fadeOut(5000);
+                        }
+
+                    }
+                });
+            }
+            else
+            {
+                $("#div-alert2").show().fadeOut(5000);
+            }
+        });
+        
+        
+        function recebe_notificacoes(id)
+        {
+            loading("Carregando", "");
+            
+            $.getJSON("http://lionphilips.tk/CI/index.php/mobile/notificacoes/"+id, function(data) {
+                $.each( data, function( key, val ) {
+                    
+                    var dados = JSON.parse(val.content);
+                    var pdf='', ebooks='', videos='';
+                    
+                    console.debug(dados);
+                    
+                    for(var i=0; i<dados[0].length; i++)
+                    {
+                        if(i==0){ pdf = '<h3>Documentos e Páginas</h3>'; }
+                        pdf += "<p><a href='"+dados[0][i].unescapedUrl+"' download>"+dados[0][i].titleNoFormatting+"</a></p>";
+                        if(i == 6){ break; }
+                    }
+                    
+                    for(var i=0; i<dados[1].length; i++)
+                    {
+                        if(i==0){ ebooks = '<h3>E-books</h3>'; }
+                        ebooks += "<p><a href='"+dados[1][i].unescapedUrl+"' target='_blank'>"+dados[1][i].titleNoFormatting+"</a></p>";
+                        if(i == 3){ break; }
+                    }
+                    
+                    for(var i=0; i<dados[2].length; i++)
+                    {
+                        if(i==0){ videos = '<h3>Vídeos</h3>'; }
+                        videos += "<p><a href='"+dados[2][i].url+"' target='_blank'>"+dados[2][i].titleNoFormatting+"</a></p>";
+                        if(i == 3){ break; }
+                    }
+                    
+                    $("#div_notifications").append(
+                            '<div data-role="collapsible">'+
+                                '<h3>'+val.disciplina+' ('+val.avaliacao+')</h3>'+
+                                pdf +
+                                ebooks +
+                                videos +
+                            '</div>'
+                    );
+                });
+                $.mobile.loading('hide');
+                
+                //location.hash = "home";
+                $.mobile.changePage( '#home', { transition: 'pop' });
+            });
+        }
+        
+        function logout()
+        {
+            localStorage.removeItem('id');
+            $.mobile.changePage( '#login', { transition: 'slide' });
+        }
+        
+        function loading(text, html)
+        {
+            $.mobile.loading( "show", {
+                text: text,
+                textVisible: true,
+                textonly: true,
+                theme: "a",
+                html: html
+            });
+        }
+        
+        function validateEmail(email) {
+            var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            return re.test(email);
+        }
+
+    </script>
+</html>
